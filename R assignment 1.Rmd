@@ -1,0 +1,97 @@
+---
+title: "R Assignment 1"
+author: "Daniel Erb"
+date: "October 21, 2018"
+output: 
+  html_document: 
+    toc: TRUE
+    toc_float: 
+      collapsed: false
+    toc_color: pygments
+    theme: united
+    highlight: pygments
+---
+
+```{r , include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load Libraries and Data Sets
+
+---
+
+```{r}
+library(ggplot2)
+library(data.table)
+hems <- read.csv("https://bit.ly/2RlqXy5")
+hems_agg <- read.csv("https://bit.ly/2y7k3Ui")
+hems_agg <- setorder(hems_agg,incidents)
+agency.order <- hems_agg$agency
+hems$agency.ordered <- factor(hems$agency,levels = agency.order)
+```
+
+
+# Exercise 1
+
+---
+
+### Prompt
+
+Compare all agencies to each other in terms of their total incidents volume. Which agency responded to the highest number of incidents? Which agency responded to the lowest number of incidents?  
+
+### Outputs
+
+Figure 1 shows that PHI has the highest number of incidents with 1067 while Air Evacs as the lowest number at 28.
+
+```{r}
+ggplot(data = hems) +
+  geom_bar(mapping = aes(x = agency.ordered)) + 
+  theme(axis.text.x = element_text(angle = 50, hjust = 1)) +
+  ggtitle("Figure 1: Bar Chart for Each Agency") +
+  geom_text(stat = 'count', aes(x = agency, label = ..count..), vjust=-.25) +
+  labs(x = "Agency", y = "Incidents")
+```
+
+### Comments
+
+I would like to order smallest to largest. I would also like to dynamically determine the agency with the highest count and what that count is and then incorporate that into the report.
+
+# Exercise 2
+
+### Prompt
+
+---
+
+The data frame contains a column called patient_acuity which has the following values: 'Critical (Red)', 'Emergent (Yellow)', 'Not Recorded', 'Lower Acuity (Green)', and 'Not Applicable'.  
+
+Find out which agency tackled the highest proportion of critical incidents.  
+
+### Outputs
+
+---
+
+Figure 2 shows that CARILION has the highest number of critical incidents.
+
+```{r}
+ggplot(data = hems) +
+  geom_bar(mapping = aes(x = agency,fill = patient_acuity), position = "fill") + 
+  theme(axis.text.x = element_text(angle = 50, hjust = 1)) +
+  ggtitle("Figure 2: Stacked Bar Chart for Each Agency") +
+  labs(x = "Agency", y = "Proportion of Incidents")
+  
+```
+
+### Comments
+
+I would like to order smallest to largest and improve the color scheme.
+
+
+
+
+# Exercise 3
+
+
+
+# Exercise 4
+
+
