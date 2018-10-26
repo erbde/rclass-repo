@@ -1,0 +1,146 @@
+---
+title: "R Assignment 1"
+author: "Daniel Erb"
+date: "October 25, 2018"
+output:
+  html_document:
+    highlight: pygments
+    theme: united
+    toc: yes
+---
+
+```{r , include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load Libraries and Prepare Data Sets
+
+---
+
+```{r}
+library(ggplot2)
+library(data.table)
+hems <- read.csv("https://bit.ly/2RlqXy5")
+hems_agg <- read.csv("https://bit.ly/2y7k3Ui")
+hems_agg <- setorder(hems_agg,incidents)
+agency.order <- hems_agg$agency
+hems$agency.ordered <- factor(hems$agency,levels = agency.order)
+```
+
+
+# Exercise 1
+
+---
+
+### Prompt
+
+Compare all agencies to each other in terms of their total incidents volume. Which agency responded to the highest number of incidents? Which agency responded to the lowest number of incidents?  
+
+### Outputs
+
+Figure 1 shows that PHI has the highest number of incidents with 1067 while Air Evacs as the lowest number at 28.
+
+```{r}
+ggplot(data = hems) +
+  geom_bar(mapping = aes(x = agency.ordered)) + 
+  theme(axis.text.x = element_text(angle = 50, hjust = 1)) +
+  ggtitle("Figure 1: Bar Chart for Each Agency") +
+  geom_text(stat = 'count', aes(x = agency, label = ..count..), vjust=-.25) +
+  labs(x = "Agency", y = "Incidents")
+```
+
+# Exercise 2
+
+### Prompt
+
+---
+
+The data frame contains a column called patient_acuity which has the following values: 'Critical (Red)', 'Emergent (Yellow)', 'Not Recorded', 'Lower Acuity (Green)', and 'Not Applicable'.  
+
+Find out which agency tackled the highest proportion of critical incidents.  
+
+### Outputs
+
+---
+
+Figure 2 shows that CARILION has the highest proportion of critical incidents.
+
+```{r}
+ggplot(data = hems) +
+  geom_bar(mapping = aes(x = agency.ordered,fill = patient_acuity), position = "fill") + 
+  theme(axis.text.x = element_text(angle = 50, hjust = 1)) +
+  ggtitle("Figure 2: Stacked Bar Chart for Each Agency") +
+  labs(x = "Agency", y = "Proportion of Incidents")
+```
+
+# Exercise 3
+
+### Prompt
+
+---
+
+1. Review the distribution of patient_blood_pressure across different levels of patient_acuity.
+2. Visually inspect the plot and estimate the central tendency (median) value of patient_blood_pressure across all acuity levels.
+3. Visually inspect the plot to identify the acuity level(s) that tends to have a higher proportion of patients with blood pressure below 100.
+4. Provide a rationalization for the type of plot you used for this exercise.
+
+
+### Outputs
+
+---
+
+1. Figures 3 and 4 serve as a review of the distribution of patient blood pressure for each patient acuity.
+
+2. The median seems to be very similar across all levels of patient acuity.  
+
+3. The proportion of patients with blood pressures less than 100 seems to increase with acuity. This increase would most likely be due to a flattening of the curve of recorded heart rates. Interestingly, the "Not Applicable" group seems to have a similar spread as "Critical (Red)" group.  
+
+4. A box plot was used because it shows the central tendency of the data while providing an idea of the spread of the various measurements. A smoothed density plot was used to check for polymodality within the data.
+
+```{r}
+ggplot(data = hems, aes(y = patient_blood_pressure, x=patient_acuity, fill = patient_acuity)) +
+  geom_boxplot(na.rm=TRUE) +
+  labs(x = "Patient Acuity", y = "Patient Blood Pressure") +
+  ggtitle("Figure 3: Box Plots of Patient Blood Pressue for Each Acuity") + 
+  theme(axis.text.x = element_text(angle = 50
+                                   ,hjust = 1)) + 
+  stat_summary(geom="text"
+               ,na.rm=TRUE
+               ,fun.y = quantile
+               ,aes(label=sprintf("%1.1f"
+                                 , ..y..))
+               ,position=position_nudge(x=0.3
+                                       ,y = 6)
+               ,size = 3.5)
+ggplot(data = hems,aes(patient_blood_pressure, color = patient_acuity)) + 
+  geom_density(na.rm = TRUE) +
+  labs(x = "Patient Blood Pressure", y = "Proportion") +
+  ggtitle("Figure 4: Smoothed Density Plot of Patient Blood Pressue")
+```
+
+# Exercise 4
+
+### Prompt
+
+---
+
+1. Create a gapminder style chart that compares all agencies with respect to their avg_reaction_time and avg_total_dur. Use incidents to change the size of each data point on the chart.
+2. Interpret the chart in your own words.
+
+### Outputs
+
+---
+
+1. Figure 5 shows a gapminder like chart.
+2. Average reaction time is positively correlated with average response time. Points like Fairfax, UVA, and MEDFLIGHT II could potentially exert a substantial amount of influence on any model fitted to the data.  
+
+```{r}
+ggplot(data = hems_agg, aes(y = avg_reaction_time, x = avg_total_dur)) + 
+  geom_point(aes(size = incidents, color = agency),alpha = 0.5) + 
+  theme_classic() + 
+  theme(legend.position = "none") +
+  geom_text(aes(label = agency, hjust = .5, vjust = 0)) +
+  labs(title = "Figure 5", x = "Average Total Duration", y = "Average Reaction Time") +
+    scale_size(range = c(0.1, 20),guide = "none")
+```
+
