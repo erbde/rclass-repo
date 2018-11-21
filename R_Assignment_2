@@ -1,8 +1,8 @@
-
 #load libraries
 library(readxl)
 library(dplyr)
 library(tidyr)
+library(tibble)
 
 #read raw data
 HEMS <- read_xlsx("G:/My Drive/vcu/Cases/Dr. Harinder Dhindsa GEMS and HEMS Response 9-13-2018.xlsx", sheet = " HEMS 911 Responses")
@@ -120,18 +120,18 @@ HT_summary[which.max(HT_summary$median_reaction_time),]$Agency == HT_summary[whi
 ##########################################################################
 
 # figure out the number of N/As and divide by the total and multiply by 100
+# first need to replace the characters NA with actual blanks
+
+HEMS_TRIMMED$Systolic_BP[HEMS_TRIMMED$Systolic_BP == "NA"] <- NA
 
 unique(HEMS_TRIMMED$Systolic_BP)
-HEMS_TRIMMED %>% 
-  drop_na(Systolic_BP) %>% 
-  group_by(Acuity) %>% 
-  summarize(n = n())
 
 HEMS_TRIMMED %>% 
   group_by(Acuity) %>% 
-  summarize(n = n())
+  summarize(Contain_Data = sum(!is.na(Systolic_BP)),Totals = n()) ->
+  HEMS_BP_COUNT
 
 
+HEMS_BP_COUNT$Percent_Empties <- (HEMS_BP_COUNT$Totals - HEMS_BP_COUNT$Contain_Data)*100/HEMS_BP_COUNT$Totals
 
-
-
+print(HEMS_BP_COUNT)
