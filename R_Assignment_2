@@ -3,7 +3,8 @@ library(readxl)
 library(dplyr)
 library(tidyr)
 library(tibble)
-
+library(ggplot2)
+library(lubridate)
 #read raw data
 HEMS <- read_xlsx("G:/My Drive/vcu/Cases/Dr. Harinder Dhindsa GEMS and HEMS Response 9-13-2018.xlsx", sheet = " HEMS 911 Responses")
 
@@ -135,3 +136,63 @@ HEMS_TRIMMED %>%
 HEMS_BP_COUNT$Percent_Empties <- (HEMS_BP_COUNT$Totals - HEMS_BP_COUNT$Contain_Data)*100/HEMS_BP_COUNT$Totals
 
 print(HEMS_BP_COUNT)
+
+##########################################################################
+##############             Question 10            ########################
+##########################################################################
+
+
+HEMS_TRIMMED$Systolic_BP[HEMS_TRIMMED$Systolic_BP == "NA"] <- NA
+HEMS_TRIMMED$Systolic_BP_impute <- HEMS_TRIMMED$Systolic_BP
+HEMS_TRIMMED$Systolic_BP_impute[is.na(HEMS_TRIMMED$Systolic_BP_impute)] <- 0
+
+HEMS_TRIMMED$Systolic_BP_impute
+
+# I chose to zero out this value as there were no real measurements. 
+# In an analysis utilizing blood pressure I would most likely leave these points out given my current knowledge of imputation.
+
+##########################################################################
+##############             Question 11            ########################
+##########################################################################
+
+hour(HEMS_TRIMMED$Dispatch_Date_Time)
+# 
+#   if (hour(HEMS_TRIMMED$Dispatch_Date_Time) >= 6 & hour(HEMS_TRIMMED$Dispatch_Date_Time) <= 9) {
+#     HEMS_TRIMMED$Part_Of_Day <- "Morning"  
+#   } else if (hour(HEMS_TRIMMED$Dispatch_Date_Time) >= 10 & hour(HEMS_TRIMMED$Dispatch_Date_Time) <= 16){
+#     HEMS_TRIMMED$Part_Of_Day <- "Daytime"      
+#   } else if (hour(HEMS_TRIMMED$Dispatch_Date_Time) >= 17 & hour(HEMS_TRIMMED$Dispatch_Date_Time) <= 19){
+#     HEMS_TRIMMED$Part_Of_Day <- "Evening"      
+#   } else if (hour(HEMS_TRIMMED$Dispatch_Date_Time) >= 20 & hour(HEMS_TRIMMED$Dispatch_Date_Time) <= 22){
+#     HEMS_TRIMMED$Part_Of_Day <- "Night"      
+#   } else if (hour(HEMS_TRIMMED$Dispatch_Date_Time) >= 23 | hour(HEMS_TRIMMED$Dispatch_Date_Time) <= 1){
+#     HEMS_TRIMMED$Part_Of_Day <- "Late night"      
+#   } else if (hour(HEMS_TRIMMED$Dispatch_Date_Time) >= 2 & hour(HEMS_TRIMMED$Dispatch_Date_Time) <= 5){
+#     HEMS_TRIMMED$Part_Of_Day <- "Overnight"     
+#   }
+
+HEMS_TRIMMED$Part_Of_Day[hour(HEMS_TRIMMED$Dispatch_Date_Time) >= 6 & hour(HEMS_TRIMMED$Dispatch_Date_Time) <= 9] <- "Morning"
+HEMS_TRIMMED$Part_Of_Day[hour(HEMS_TRIMMED$Dispatch_Date_Time) >= 10 & hour(HEMS_TRIMMED$Dispatch_Date_Time) <= 16] <- "Daytime"
+HEMS_TRIMMED$Part_Of_Day[hour(HEMS_TRIMMED$Dispatch_Date_Time) >= 17 & hour(HEMS_TRIMMED$Dispatch_Date_Time) <= 19] <- "Evening"
+HEMS_TRIMMED$Part_Of_Day[hour(HEMS_TRIMMED$Dispatch_Date_Time) >= 20 & hour(HEMS_TRIMMED$Dispatch_Date_Time) <= 22] <- "Night"
+HEMS_TRIMMED$Part_Of_Day[hour(HEMS_TRIMMED$Dispatch_Date_Time) >= 23 | hour(HEMS_TRIMMED$Dispatch_Date_Time) <= 1] <- "Late night"
+HEMS_TRIMMED$Part_Of_Day[hour(HEMS_TRIMMED$Dispatch_Date_Time) >= 2 & hour(HEMS_TRIMMED$Dispatch_Date_Time) <= 5] <- "Overnight"
+
+unique(HEMS_TRIMMED$Part_Of_Day)
+
+HEMS_TRIMMED %>% 
+  group_by(Part_Of_Day) %>% 
+  summarize(count = n()) ->
+  HEMS_POD
+
+HEMS_POD
+
+
+##########################################################################
+##############             Question 12            ########################
+##########################################################################
+
+HEMS_TRIMMED %>% 
+  group_by(Part_Of_Day) %>%
+
+
