@@ -1,1 +1,137 @@
 
+#load libraries
+library(readxl)
+library(dplyr)
+library(tidyr)
+
+#read raw data
+HEMS <- read_xlsx("G:/My Drive/vcu/Cases/Dr. Harinder Dhindsa GEMS and HEMS Response 9-13-2018.xlsx", sheet = " HEMS 911 Responses")
+
+##########################################################################
+##############             Question 1             ########################
+##########################################################################
+
+# define columns to keep in OldNames variable
+OldNames <- c("Agency",
+              "Incident.Complaint.Reported.By.Dispatch..eDispatch.01.",
+              "Incident.Unit.Notified.By.Dispatch.Date.Time..eTimes.03.",
+              "Scene.Incident.City.Name..eScene.17.",
+              "Scene.Incident.County.Name..eScene.21.",
+              "Situation.Complaint.Type..eSituation.03.",
+              "Situation.Initial.Patient.Acuity..eSituation.13.",
+              "Vitals.Signs.Taken.Date.Time..eVitals.01.",
+              "Vitals.Systolic.Blood.Pressure.SBP..eVitals.06.",
+              "Vitals.Total.Glasgow.Coma.Score.GCS..eVitals.23.",
+              "Incident.Patient.Arrived.At.Destination.Date.Time..eTimes.11."
+              )
+
+# keep those OldNames Columns
+HEMS_TRIMMED <- HEMS[,names(HEMS) %in% OldNames]
+
+##########################################################################
+##############             Question 2             ########################
+##########################################################################
+
+# define new names to give
+NewNames <- c("Agency",
+              "Complaint_Reported",
+              "Dispatch_Date_Time",
+              "City_Name",
+              "County_Name",
+              "Complaint_Type",
+              "Acuity",
+              "Vitals_Taken_Date_Time",
+              "Systolic_BP",
+              "Glasgow_Coma_Score",
+              "Arrival_Date_Time"
+)
+
+# switch out the list of old names for the list of new names
+for (i in 1:length(names(HEMS_TRIMMED))){
+  names(HEMS_TRIMMED)[names(HEMS_TRIMMED) == OldNames[i]] <- NewNames[i]
+}
+
+##########################################################################
+##############             Question 3             ########################
+##########################################################################
+
+# Find distinct values from agency names
+OriginalAgencyNames <- unique(HEMS_TRIMMED$Agency)
+print(OriginalAgencyNames)
+
+NewAgencyNames <- c(
+  "AIRCARE",
+  "MEDSTAR",
+  "CARILION",
+  "PHI",
+  "NIGHTINGALE",
+  "AIR METHODS",
+  "WINGS",
+  "UVA",
+  "FAIRFAX PD",
+  "VSP II",
+  "AIR EVAC",
+  "VSP I"
+)
+
+
+for (j in 1:length(OriginalAgencyNames)){
+  HEMS_TRIMMED$Agency[HEMS_TRIMMED$Agency == OriginalAgencyNames[j]] <- NewAgencyNames[j]
+}
+
+##########################################################################
+##############             Question 4             ########################
+##########################################################################
+
+HEMS_TRIMMED$Total_Duration_Time <- 
+  HEMS_TRIMMED$Arrival_Date_Time - HEMS_TRIMMED$Dispatch_Date_Time
+
+
+##########################################################################
+##############             Question 5             ########################
+##########################################################################
+
+HEMS_TRIMMED$Reaction_Time <- 
+  HEMS_TRIMMED$Vitals_Taken_Date_Time - HEMS_TRIMMED$Dispatch_Date_Time
+
+##########################################################################
+##############             Question 6             ########################
+##########################################################################
+
+HEMS_TRIMMED %>%
+  filter(!is.na(Total_Duration_Time)) %>% 
+  filter(!is.na(Reaction_Time)) %>% 
+  group_by(Agency) %>% 
+  summarize(n = n(), median_reaction_time = median(Reaction_Time), median_duration = median(Total_Duration_Time)) ->
+  HT_summary
+
+HT_summary[which.max(HT_summary$median_reaction_time),]$Agency == HT_summary[which.max(HT_summary$n),]$Agency
+
+##########################################################################
+##############             Question 7             ########################
+############################ Optional ####################################
+
+##########################################################################
+##############             Question 8             ########################
+############################ Optional ####################################
+
+##########################################################################
+##############             Question 9             ########################
+##########################################################################
+
+# figure out the number of N/As and divide by the total and multiply by 100
+
+unique(HEMS_TRIMMED$Systolic_BP)
+HEMS_TRIMMED %>% 
+  drop_na(Systolic_BP) %>% 
+  group_by(Acuity) %>% 
+  summarize(n = n())
+
+HEMS_TRIMMED %>% 
+  group_by(Acuity) %>% 
+  summarize(n = n())
+
+
+
+
+
