@@ -109,14 +109,6 @@ HEMS_TRIMMED %>%
 HT_summary[which.max(HT_summary$median_reaction_time),]$Agency == HT_summary[which.max(HT_summary$n),]$Agency
 
 ##########################################################################
-##############             Question 7             ########################
-############################ Optional ####################################
-
-##########################################################################
-##############             Question 8             ########################
-############################ Optional ####################################
-
-##########################################################################
 ##############             Question 9             ########################
 ##########################################################################
 
@@ -192,7 +184,22 @@ HEMS_POD
 ##############             Question 12            ########################
 ##########################################################################
 
-HEMS_TRIMMED %>% 
-  group_by(Part_Of_Day) %>%
+unique(HEMS_TRIMMED$Complaint_Type)
 
+HEMS_TRIMMED %>% 
+  group_by(Complaint_Type) %>%
+  summarize(percentper = sum())
+
+
+HEMS_MERGED <- merge(x = HEMS_TRIMMED, y = HEMS_POD, by.y = "Part_Of_Day", by.x = "Part_Of_Day")
+
+HEMS_MERGED %>% 
+  group_by(Part_Of_Day,Complaint_Type) %>% 
+  summarize(perc = n()) %>% 
+  group_by(Par)
+    
+    
+    
+    
+    
 
